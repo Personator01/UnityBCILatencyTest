@@ -14,10 +14,13 @@ public class control : MonoBehaviour
     public float off_time = 1;
 
     public int trials = 100;
+
+    AudioSource sound();
     void Awake() {
 	bci = GameObject.Find("BCI2000").GetComponent<UnityBCI2000>();
 	bci.OnIdle(bc => {
-		bc.AddEvent("light", 1);
+		bc.AddEvent("light_unity", 1);
+		bc.AddEvent("sound_unity", 1);
 		bc.AddParameter("Application:Unity", "on_time", on_time.ToString(), "0");
 		bc.AddParameter("Application:Unity", "off_time", off_time.ToString(), "0");
 		bc.AddParameter("Application:Unity", "trials", trials.ToString(), "1");
@@ -54,8 +57,14 @@ public class control : MonoBehaviour
 
     IEnumerator Light(bool on, int trials) {
 	yield return new WaitForSeconds(on ? on_time : off_time);
-	bci.Control.SetEvent("light", on ? 1u : 0u);
+	bci.Control.SetEvent("light_unity", on ? 1u : 0u);
 	this.GetComponent<Renderer>().material.SetColor("_Color", on ? on_c : off_c);
+	bci.Control.SetEvent("sound", on ? 1u : 0u);
+	if (on) {
+	    this.GetComponent<AudioSource>.Play();
+	} else {
+	    this.GetComponent<AudioSource>.Stop();
+	}
 	StartCoroutine(Light(!on, trials - (on ? 1 : 0)));
     }
 }
